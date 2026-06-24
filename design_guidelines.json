@@ -1,0 +1,130 @@
+{
+  "theme": "light",
+  "archetype": "4 (Swiss & High-Contrast)",
+  "design_concept": "The Archive: A highly structured, encyclopedic directory for AI tools. Function-first, utilizing stark white backgrounds, heavy black typography, and structural grid lines. Color is used strictly for function (Signal Red for action, Archive Blue for metadata).",
+  "colors": {
+    "background": "#F9F9F8",
+    "surface": "#FFFFFF",
+    "text_primary": "#0A0A0A",
+    "text_secondary": "#525252",
+    "primary": "#FF3B30",
+    "primary_hover": "#D62828",
+    "secondary": "#0044FF",
+    "border": "#E5E5E5",
+    "border_high_contrast": "#0A0A0A",
+    "muted": "#F3F4F6",
+    "accent_tags": {
+      "free": "#E6F4EA",
+      "freemium": "#FEF3C7",
+      "paid": "#FEE2E2"
+    }
+  },
+  "typography": {
+    "heading_font": "\"Outfit\", sans-serif",
+    "body_font": "\"Work Sans\", sans-serif",
+    "mono_font": "\"Space Mono\", monospace",
+    "hierarchy": {
+      "h1": "text-5xl sm:text-6xl tracking-tighter font-black leading-none",
+      "h2": "text-3xl sm:text-4xl tracking-tight font-bold",
+      "h3": "text-xl sm:text-2xl font-bold",
+      "h4": "text-lg font-semibold",
+      "body": "text-base leading-relaxed font-medium",
+      "small": "text-sm text-secondary",
+      "overline": "text-xs font-mono uppercase tracking-[0.2em] text-secondary",
+      "tag": "text-xs font-mono font-bold px-2 py-1 uppercase"
+    }
+  },
+  "spacing_and_layout": {
+    "container_padding": "px-6 md:px-12 lg:px-24",
+    "section_spacing": "py-24",
+    "grid_gap": "gap-6",
+    "card_padding": "p-6",
+    "border_radius": "rounded-none",
+    "shadows": {
+      "default": "none",
+      "hover": "shadow-[4px_4px_0px_0px_rgba(10,10,10,1)]",
+      "glass": "shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
+    }
+  },
+  "components": {
+    "button_primary": "bg-primary text-white font-bold tracking-wide uppercase px-6 py-3 border-2 border-transparent hover:border-black hover:bg-black hover:text-white transition-all duration-200",
+    "button_secondary": "bg-transparent text-text_primary border-2 border-black font-bold uppercase tracking-wide px-6 py-3 hover:bg-black hover:text-white transition-all duration-200",
+    "card": "bg-surface border-2 border-border_high_contrast p-6 transition-transform duration-200 hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(10,10,10,1)]",
+    "input": "bg-surface border-2 border-border_high_contrast px-4 py-3 font-mono text-sm focus:outline-none focus:ring-0 focus:border-secondary transition-colors",
+    "badge": "border border-border_high_contrast px-2 py-1 text-xs font-mono uppercase bg-white",
+    "header": "fixed top-0 w-full z-50 bg-background/90 backdrop-blur-xl border-b-2 border-border_high_contrast",
+    "chat_widget": "fixed bottom-8 right-8 w-16 h-16 bg-black border-2 border-white rounded-full flex items-center justify-center text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:scale-105 transition-transform z-50 cursor-pointer"
+  },
+  "pages": {
+    "homepage": {
+      "hero": "Massive typography left-aligned. 'THE INDEX OF AI'. Large full-width search input with command-palette style (Cmd+K). Background features subtle geometric architectural grid pattern.",
+      "featured_tools": "Bento grid of cards. Tool logo, mono font tags (pricing, category), bold description.",
+      "categories": "List view or dense grid with monospace numbering. '01. Marketing', '02. Development'.",
+      "guides": "Editorial style sections for professions."
+    },
+    "tool_directory": {
+      "layout": "Sidebar for filters (checkboxes, price ranges). Main area for tool cards in a responsive grid. Dynamic and data-driven."
+    },
+    "tool_detail": {
+      "layout": "2-column layout. Left: Tool Title, Breadcrumbs, full description, 'Best Prompts' section styled like terminal/code blocks. Right: Sticky panel with 'Visit Tool' primary CTA, pricing details, and 'Free Alternatives' list."
+    },
+    "profession_guides": {
+      "layout": "Magazine editorial layout. Large hero image (e.g., Student in library). Content blocks with 'Recommended Stack' cards embedded inside the text."
+    }
+  },
+  "media": {
+    "hero_background": {
+      "url": "https://images.pexels.com/photos/3137072/pexels-photo-3137072.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Abstract geometric architecture used as a subtle, low-opacity background for the hero section to establish the 'Archive/Index' structural theme."
+    },
+    "professions": [
+      {
+        "role": "Student",
+        "url": "https://images.unsplash.com/photo-1741699428220-65f37f3fbbcb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwxfHxzdHVkZW50JTIwc3R1ZHlpbmclMjBsaWJyYXJ5fGVufDB8fHx8MTc4MjI4NTg2N3ww&ixlib=rb-4.1.0&q=85",
+        "description": "Student studying in library."
+      },
+      {
+        "role": "Developer",
+        "url": "https://images.pexels.com/photos/89724/pexels-photo-89724.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Programmer working on code."
+      },
+      {
+        "role": "Digital Marketer",
+        "url": "https://images.pexels.com/photos/6476192/pexels-photo-6476192.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Digital marketing professionals discussing strategy."
+      },
+      {
+        "role": "Freelancer",
+        "url": "https://images.pexels.com/photos/26611985/pexels-photo-26611985.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Freelancer working remotely in a cafe."
+      },
+      {
+        "role": "Researcher",
+        "url": "https://images.pexels.com/photos/3735711/pexels-photo-3735711.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Researcher in a modern laboratory."
+      }
+    ],
+    "placeholders": {
+      "tool_logo": "https://images.pexels.com/photos/35066503/pexels-photo-35066503.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Vintage cabinet used for generic tool cover placeholders."
+    }
+  },
+  "motion": {
+    "hover": "Instant, snappy transitions for colors. Transform/translate with a 0.2s ease-out for neo-brutalist cards.",
+    "page_load": "Staggered fade-up for grid items. Minimalistic and fast.",
+    "marquee": "Slow, constant scrolling for trending tools or 'Supported by' logos, using a monospace font."
+  },
+  "accessibility_and_testing": {
+    "testing_ids": "All interactive elements (buttons, links, form inputs) MUST have a data-testid attribute in kebab-case. Example: data-testid='hero-search-input'.",
+    "contrast": "All text must pass WCAG AA (4.5:1). Black text on white/off-white easily passes."
+  },
+  "instructions_to_main_agent": [
+    "Load fonts from Google Fonts: @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Work+Sans:wght@400;500;600&display=swap');",
+    "Use Shadcn UI components but strip away default border-radii (make them rounded-none) and apply the solid border/brutalist shadow classes.",
+    "Implement fluid typography using clamp() or Tailwind text scales as defined in the hierarchy.",
+    "Ensure all grid layouts use the 'Control Room' dense bento pattern.",
+    "Add @phosphor-icons/react for high-end iconography.",
+    "Include a Floating Action Button for the AI Chatbot widget.",
+    "Apply 'data-testid' to all key components as required."
+  ]
+}

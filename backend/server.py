@@ -727,16 +727,42 @@ logger = logging.getLogger(__name__)
 
 async def _seed_content(force: bool = False):
     from seed_data import CATEGORIES, TOOLS, CAREER_PACKS
-    if force or await db.tools.count_documents({}) == 0:
+    # Seed each collection independently — safe for existing production data.
+    if force:
         await db.categories.delete_many({})
         await db.tools.delete_many({})
         await db.career_packs.delete_many({})
-        if CATEGORIES:
-            await db.categories.insert_many([Category(**c).model_dump() for c in CATEGORIES])
-        if TOOLS:
-            await db.tools.insert_many([Tool(**t).model_dump() for t in TOOLS])
-        if CAREER_PACKS:
-            await db.career_packs.insert_many([CareerPack(**p).model_dump() for p in CAREER_PACKS])
+
+    # Categories: upsert by slug — insert missing AND refresh description/icon/name for existing
+    if CATEGORIES:
+        for c in CATEGORIES:
+            existing = await db.categories.find_one({"slug": c["slug"]}, {"_id": 0})
+            if existing:
+                # Refresh display fields; keep original id
+                await db.categories.update_one(
+                    {"slug": c["slug"]},
+                    {"$set": {"name": c["name"], "description": c["description"], "icon": c["icon"],
+                              "parent_slug": c.get("parent_slug"), "sort": c.get("sort", 100)}}
+                )
+            else:
+                await db.categories.insert_one(Category(**c).model_dump())
+        logger.info("Categories synced (%d total)", await db.categories.count_documents({}))
+
+    # Tools: only seed the core curated 27 if collection is empty
+    if TOOLS and await db.tools.count_documents({}) == 0:
+        await db.tools.insert_many([Tool(**t).model_dump() for t in TOOLS])
+        logger.info("Seeded %d core tools", len(TOOLS))
+
+    # Career packs: upsert missing slugs
+    if CAREER_PACKS:
+        existing_packs = set()
+        async for d in db.career_packs.find({}, {"_id": 0, "slug": 1}):
+            existing_packs.add(d["slug"])
+        new_packs = [CareerPack(**p).model_dump() for p in CAREER_PACKS if p["slug"] not in existing_packs]
+        if new_packs:
+            await db.career_packs.insert_many(new_packs)
+            logger.info("Seeded %d new career packs", len(new_packs))
+
     return {
         "categories": await db.categories.count_documents({}),
         "tools": await db.tools.count_documents({}),

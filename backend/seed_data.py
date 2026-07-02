@@ -14,60 +14,60 @@ GROUPS = [
 
 SUBS = [
     # Personas
-    ("Students", "students", "personas", "GraduationCap"),
-    ("Developers", "developers", "personas", "Code2"),
-    ("Researchers", "researchers", "personas", "FlaskConical"),
-    ("Designers", "designers", "personas", "Palette"),
-    ("Marketers", "marketers", "personas", "Megaphone"),
-    ("Founders", "founders", "personas", "Rocket"),
-    ("Freelancers", "freelancers", "personas", "UserRoundCog"),
+    ("Students", "students", "personas", "GraduationCap", "Ace assignments, study smarter, learn 2x faster."),
+    ("Developers", "developers", "personas", "Code2", "Ship code faster with AI-native editors and agents."),
+    ("Researchers", "researchers", "personas", "FlaskConical", "Literature reviews, synthesis, and grant drafting."),
+    ("Designers", "designers", "personas", "Palette", "Generate UI, mockups, brand assets in minutes."),
+    ("Marketers", "marketers", "personas", "Megaphone", "Content, ads, and social at 10x speed."),
+    ("Founders", "founders", "personas", "Rocket", "Research → deck → MVP → launch, solo."),
+    ("Freelancers", "freelancers", "personas", "UserRoundCog", "Turn skills into a one-person agency."),
     # Business Ops
-    ("Sales & CRM", "sales-crm", "business-ops", "TrendingUp"),
-    ("Customer Support", "support", "business-ops", "Headphones"),
-    ("HR & Recruiting", "hr", "business-ops", "Users"),
-    ("Legal & Compliance", "legal", "business-ops", "Scale"),
-    ("Finance & Accounting", "finance", "business-ops", "Landmark"),
+    ("Sales & CRM", "sales-crm", "business-ops", "TrendingUp", "AI SDRs, deal intelligence, revenue ops."),
+    ("Customer Support", "support", "business-ops", "Headphones", "AI agents resolving tickets 24/7."),
+    ("HR & Recruiting", "hr", "business-ops", "Users", "Sourcing, screening, and onboarding at scale."),
+    ("Legal & Compliance", "legal", "business-ops", "Scale", "Contract review, drafting, and research."),
+    ("Finance & Accounting", "finance", "business-ops", "Landmark", "Bookkeeping, forecasting, and reporting."),
     # Industries
-    ("Real Estate & PropTech", "real-estate", "industries", "Home"),
-    ("Ecommerce", "ecommerce", "industries", "ShoppingCart"),
-    ("Healthcare", "healthcare", "industries", "Stethoscope"),
-    ("Education", "education", "industries", "BookOpen"),
+    ("Real Estate & PropTech", "real-estate", "industries", "Home", "Listings, valuations, and tenant automation."),
+    ("Ecommerce", "ecommerce", "industries", "ShoppingCart", "Product descriptions, ads, and personalization."),
+    ("Healthcare", "healthcare", "industries", "Stethoscope", "Clinical documentation, diagnostics, and triage."),
+    ("Education", "education", "industries", "BookOpen", "Tutors, lesson planning, and grading assistants."),
     # Technical
-    ("Data & Analytics", "data", "technical", "BarChart3"),
-    ("AI Infrastructure", "ai-infra", "technical", "Cpu"),
-    ("Security & Privacy", "security", "technical", "ShieldCheck"),
+    ("Data & Analytics", "data", "technical", "BarChart3", "Natural-language dashboards and analysis."),
+    ("AI Infrastructure", "ai-infra", "technical", "Cpu", "Vector DBs, orchestration, model hosting."),
+    ("Security & Privacy", "security", "technical", "ShieldCheck", "AI-powered threat detection and code scanning."),
     # AI Agents
-    ("Coding Agents", "coding-agents", "ai-agents", "Terminal"),
-    ("Browser & Computer-Use", "browser-agents", "ai-agents", "MousePointer"),
-    ("Research Agents", "research-agents", "ai-agents", "Search"),
-    ("Sales / SDR Agents", "sdr-agents", "ai-agents", "PhoneCall"),
-    ("Agent Builders (No-code)", "agent-builders", "ai-agents", "Wrench"),
-    ("Frameworks (Devs)", "agent-frameworks", "ai-agents", "Braces"),
-    ("Multi-Agent Orchestration", "multi-agent", "ai-agents", "Network"),
+    ("Coding Agents", "coding-agents", "ai-agents", "Terminal", "Devin, Cursor Agent, Claude Code — ship PRs."),
+    ("Browser & Computer-Use", "browser-agents", "ai-agents", "MousePointer", "Agents that click, type, and complete web tasks."),
+    ("Research Agents", "research-agents", "ai-agents", "Search", "Deep research pipelines with cited answers."),
+    ("Sales / SDR Agents", "sdr-agents", "ai-agents", "PhoneCall", "Autonomous prospecting and follow-up."),
+    ("Agent Builders (No-code)", "agent-builders", "ai-agents", "Wrench", "Build custom agents without writing code."),
+    ("Frameworks (Devs)", "agent-frameworks", "ai-agents", "Braces", "LangGraph, CrewAI, AutoGen — for developers."),
+    ("Multi-Agent Orchestration", "multi-agent", "ai-agents", "Network", "Teams of specialized agents working together."),
     # Automation
-    ("Workflow Builders", "workflow-builders", "automation", "Workflow"),
-    ("Business Process (BPA)", "bpa", "automation", "GitBranch"),
-    ("Document/Data Automation", "doc-automation", "automation", "FileText"),
-    ("Marketing Automation", "marketing-automation", "automation", "Megaphone"),
-    ("Developer-First Automation", "dev-automation", "automation", "TerminalSquare"),
-    ("RPA", "rpa", "automation", "Bot"),
-    ("E-commerce Sync", "ecom-sync", "automation", "PackageOpen"),
-    # Core (modalities)
-    ("Chat & Reasoning", "chat", "core", "MessagesSquare"),
-    ("Writing & Content", "writing", "core", "PenLine"),
-    ("Image Generation", "image", "core", "Image"),
-    ("Video Generation", "video", "core", "Video"),
-    ("Audio & Voice", "audio", "core", "AudioLines"),
-    ("Code & Developer", "code", "core", "Code2"),
-    ("Productivity", "productivity", "core", "Sparkles"),
-    ("Research", "research", "core", "FlaskConical"),
-    ("Design & Presentation", "design", "core", "Palette"),
-    ("Marketing & SEO", "marketing", "core", "Megaphone"),
+    ("Workflow Builders", "workflow-builders", "automation", "Workflow", "Zapier, Make, n8n — trigger→action flows."),
+    ("Business Process (BPA)", "bpa", "automation", "GitBranch", "End-to-end process automation across teams."),
+    ("Document/Data Automation", "doc-automation", "automation", "FileText", "OCR, extraction, and data pipelines."),
+    ("Marketing Automation", "marketing-automation", "automation", "Megaphone", "Drip campaigns, lead scoring, retargeting."),
+    ("Developer-First Automation", "dev-automation", "automation", "TerminalSquare", "Code-first automation for engineers."),
+    ("RPA", "rpa", "automation", "Bot", "Legacy app automation via UI robots."),
+    ("E-commerce Sync", "ecom-sync", "automation", "PackageOpen", "Sync orders, inventory, and channels."),
+    # Core
+    ("Chat & Reasoning", "chat", "core", "MessagesSquare", "General-purpose AI assistants."),
+    ("Writing & Content", "writing", "core", "PenLine", "Long-form writing, copywriting, blogging."),
+    ("Image Generation", "image", "core", "Image", "Text-to-image, editing, upscaling."),
+    ("Video Generation", "video", "core", "Video", "Generate, edit, and avatar videos."),
+    ("Audio & Voice", "audio", "core", "AudioLines", "TTS, music generation, voice cloning."),
+    ("Code & Developer", "code", "core", "Code2", "Code generation, autocomplete, refactoring."),
+    ("Productivity", "productivity", "core", "Sparkles", "Notes, meetings, transcription, focus."),
+    ("Research", "research", "core", "FlaskConical", "Search, citations, and knowledge synthesis."),
+    ("Design & Presentation", "design", "core", "Palette", "Slides, mockups, and design assistants."),
+    ("Marketing & SEO", "marketing", "core", "Megaphone", "SEO, ads, social, and growth."),
 ]
 
 CATEGORIES = GROUPS + [
-    {"name": n, "slug": s, "description": f"{n} tools.", "icon": ic, "parent_slug": p, "sort": 10}
-    for (n, s, p, ic) in SUBS
+    {"name": n, "slug": s, "description": d, "icon": ic, "parent_slug": p, "sort": 10}
+    for (n, s, p, ic, d) in SUBS
 ]
 
 

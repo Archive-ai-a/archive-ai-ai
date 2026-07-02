@@ -13,7 +13,7 @@ import json
 import uuid
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
 
@@ -162,6 +162,17 @@ class ChatRequest(BaseModel):
     message: str
 
 
+class RegisterIn(BaseModel):
+    email: EmailStr
+    password: str
+    name: Optional[str] = None
+
+
+class BulkImportIn(BaseModel):
+    tools: List[dict]
+    overwrite: bool = False
+
+
 # ---------- Auth ----------
 async def _get_user_by_id(uid: str):
     return await db.users.find_one({"id": uid}, {"_id": 0})
@@ -181,6 +192,13 @@ async def current_user(request: Request) -> Optional[dict]:
     return user
 
 
+async def require_user(request: Request):
+    user = await current_user(request)
+    if not user:
+        raise HTTPException(401, "Auth required")
+    return user
+
+
 async def require_admin(request: Request):
     user = await current_user(request)
     if not user or user.get("role") not in ("admin", "super_admin"):
@@ -196,11 +214,28 @@ async def require_super_admin(request: Request):
 
 
 @api_router.post("/auth/login")
-async def login(payload: LoginIn, response: Response):
+async def login(payload: LoginIn, request: Request, response: Response):
     email = payload.email.lower().strip()
+    key = f"email:{email}"
+    # Rate limit: 5 failed attempts / 15 min per email
+    now = datetime.now(timezone.utc)
+    rec = await db.login_attempts.find_one({"key": key})
+    if rec and rec.get("locked_until") and rec["locked_until"] > now.isoformat():
+        raise HTTPException(429, "Too many failed attempts. Try again later.")
+
     user = await db.users.find_one({"email": email})
     if not user or not verify_password(payload.password, user.get("password_hash", "")):
+        # increment failed attempts
+        fails = (rec or {}).get("fails", 0) + 1
+        upd = {"fails": fails, "last_at": now.isoformat()}
+        if fails >= 5:
+            upd["locked_until"] = (now + timedelta(minutes=15)).isoformat()
+            upd["fails"] = 0
+        await db.login_attempts.update_one({"key": key}, {"$set": upd}, upsert=True)
         raise HTTPException(401, "Invalid email or password")
+
+    # Success — clear attempts
+    await db.login_attempts.delete_one({"key": key})
     token = create_access_token(user["id"], user["email"], user["role"])
     response.set_cookie(
         key="access_token", value=token,
@@ -225,7 +260,104 @@ async def me(request: Request):
     return user
 
 
-@api_router.get("/admin/admins")
+@api_router.post("/auth/register")
+async def register(payload: RegisterIn, response: Response):
+    email = payload.email.lower().strip()
+    if len(payload.password) < 6:
+        raise HTTPException(400, "Password must be at least 6 characters")
+    exists = await db.users.find_one({"email": email})
+    if exists:
+        raise HTTPException(400, "Email already registered")
+    doc = {
+        "id": str(uuid.uuid4()),
+        "email": email,
+        "name": payload.name or email.split("@")[0],
+        "role": "user",
+        "password_hash": hash_password(payload.password),
+        "bookmarks": [],
+        "created_at": now_iso(),
+        "last_login_at": now_iso(),
+    }
+    await db.users.insert_one(doc)
+    token = create_access_token(doc["id"], doc["email"], doc["role"])
+    response.set_cookie("access_token", token, httponly=True, secure=False, samesite="lax",
+                        max_age=60 * 60 * 24 * 7, path="/")
+    doc.pop("password_hash")
+    doc.pop("_id", None)
+    return {"token": token, "user": doc}
+
+
+# ---------- Bookmarks ----------
+@api_router.get("/bookmarks")
+async def get_bookmarks(user: dict = Depends(require_user)):
+    slugs = user.get("bookmarks", [])
+    if not slugs:
+        return []
+    docs = await db.tools.find({"slug": {"$in": slugs}}, {"_id": 0}).to_list(500)
+    return docs
+
+
+@api_router.post("/bookmarks/{slug}")
+async def add_bookmark(slug: str, user: dict = Depends(require_user)):
+    tool = await db.tools.find_one({"slug": slug})
+    if not tool:
+        raise HTTPException(404, "Tool not found")
+    await db.users.update_one({"id": user["id"]}, {"$addToSet": {"bookmarks": slug}})
+    return {"ok": True}
+
+
+@api_router.delete("/bookmarks/{slug}")
+async def remove_bookmark(slug: str, user: dict = Depends(require_user)):
+    await db.users.update_one({"id": user["id"]}, {"$pull": {"bookmarks": slug}})
+    return {"ok": True}
+
+
+# ---------- Bulk import ----------
+@api_router.post("/admin/bulk-import")
+async def bulk_import(payload: BulkImportIn, _: dict = Depends(require_admin)):
+    added = 0
+    updated = 0
+    skipped = 0
+    for raw in payload.tools:
+        try:
+            data = ToolIn(**{**{"pricing": "freemium", "url": ""}, **raw}).model_dump()
+        except Exception:
+            skipped += 1
+            continue
+        existing = await db.tools.find_one({"slug": data["slug"]})
+        if existing:
+            if payload.overwrite:
+                data["id"] = existing["id"]
+                data["created_at"] = existing.get("created_at", now_iso())
+                data["view_count"] = existing.get("view_count", 0)
+                await db.tools.update_one({"slug": data["slug"]}, {"$set": data})
+                updated += 1
+            else:
+                skipped += 1
+        else:
+            tool = Tool(**data)
+            await db.tools.insert_one(tool.model_dump())
+            added += 1
+    return {"added": added, "updated": updated, "skipped": skipped}
+
+
+@api_router.post("/admin/import-extras")
+async def import_extras(_: dict = Depends(require_admin)):
+    from extra_tools import build_extra_tools
+    tools = build_extra_tools()
+    existing_slugs = set()
+    async for d in db.tools.find({}, {"_id": 0, "slug": 1}):
+        existing_slugs.add(d["slug"])
+    added = 0
+    for t in tools:
+        if t["slug"] in existing_slugs:
+            continue
+        await db.tools.insert_one(Tool(**t).model_dump())
+        added += 1
+    return {"added": added, "total_available": len(tools), "existing": len(existing_slugs)}
+
+
+# ---------- Admin: admins
 async def list_admins(_: dict = Depends(require_admin)):
     docs = await db.users.find(
         {"role": {"$in": ["admin", "super_admin"]}},
@@ -647,6 +779,19 @@ async def on_start():
         await db.career_packs.create_index("slug", unique=True)
         await _seed_super_admin()
         await _seed_content(force=False)
+        # Auto-import extra tools (idempotent — skips existing slugs)
+        try:
+            from extra_tools import build_extra_tools
+            tools = build_extra_tools()
+            existing = set()
+            async for d in db.tools.find({}, {"_id": 0, "slug": 1}):
+                existing.add(d["slug"])
+            new = [Tool(**t).model_dump() for t in tools if t["slug"] not in existing]
+            if new:
+                await db.tools.insert_many(new)
+                logger.info("Imported %d extra tools", len(new))
+        except Exception as e:
+            logger.exception("extra import failed: %s", e)
     except Exception as e:
         logger.exception("startup error: %s", e)
 

@@ -12,6 +12,9 @@ import CareerPackDetail from "@/pages/CareerPackDetail";
 import MoneyGuides from "@/pages/MoneyGuides";
 import Roadmap from "@/pages/Roadmap";
 import Prompts from "@/pages/Prompts";
+import Compare from "@/pages/Compare";
+import AuthPage from "@/pages/AuthPage";
+import Bookmarks from "@/pages/Bookmarks";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminShell from "@/pages/admin/AdminShell";
 import "@/App.css";
@@ -40,6 +43,10 @@ export default function App() {
                   <Route path="/money" element={<MoneyGuides />} />
                   <Route path="/roadmap" element={<Roadmap />} />
                   <Route path="/prompts" element={<Prompts />} />
+                  <Route path="/compare" element={<Compare />} />
+                  <Route path="/login" element={<AuthPage mode="login" />} />
+                  <Route path="/register" element={<AuthPage mode="register" />} />
+                  <Route path="/bookmarks" element={<Bookmarks />} />
                 </Routes>
               </Layout>
             }

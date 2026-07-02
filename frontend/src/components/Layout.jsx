@@ -1,14 +1,15 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Search, Menu, X, ChevronDown } from "lucide-react";
+import { Search, Menu, X, ChevronDown, Bookmark, LogOut, User } from "lucide-react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import ChatWidget from "@/components/ChatWidget";
 
 const NAV = [
   { to: "/tools", label: "AI Tools" },
   { to: "/categories", label: "Categories" },
   { to: "/packs", label: "Career Packs" },
-  { to: "/prompts", label: "Workflows" },
+  { to: "/compare", label: "Compare" },
   { to: "/money", label: "Make Money" },
   { to: "/roadmap", label: "Roadmap" },
 ];
@@ -16,6 +17,7 @@ const NAV = [
 export default function Layout({ children }) {
   const [open, setOpen] = React.useState(false);
   const [faq, setFaq] = React.useState([]);
+  const { user, logout } = useAuth();
   const loc = useLocation();
   React.useEffect(() => { setOpen(false); }, [loc.pathname]);
   React.useEffect(() => { api.get("/faq").then(r => setFaq(r.data)).catch(() => {}); }, []);
@@ -41,6 +43,20 @@ export default function Layout({ children }) {
             <Link to="/tools" data-testid="nav-search-btn" className="hidden md:inline-flex items-center gap-2 border-2 border-black px-3 py-1.5 font-mono text-xs uppercase tracking-wider hover:bg-black hover:text-white transition-colors">
               <Search size={14}/> Search
             </Link>
+            {user && user.role === "user" ? (
+              <>
+                <Link to="/bookmarks" data-testid="nav-bookmarks" className="hidden md:inline-flex items-center gap-2 border-2 border-black px-3 py-1.5 font-mono text-xs uppercase tracking-wider hover:bg-black hover:text-white">
+                  <Bookmark size={14}/> Saved
+                </Link>
+                <button data-testid="nav-logout" onClick={logout} className="hidden md:inline-flex border-2 border-black p-2 hover:bg-[var(--signal)] hover:text-white hover:border-[var(--signal)]" title={user.name}>
+                  <LogOut size={14}/>
+                </button>
+              </>
+            ) : (
+              <Link to="/login" data-testid="nav-signin" className="hidden md:inline-flex items-center gap-2 border-2 border-black px-3 py-1.5 font-mono text-xs uppercase tracking-wider hover:bg-black hover:text-white">
+                <User size={14}/> Sign In
+              </Link>
+            )}
             <button data-testid="nav-mobile-toggle" className="lg:hidden border-2 border-black p-2" onClick={() => setOpen(!open)}>
               {open ? <X size={18}/> : <Menu size={18}/>}
             </button>

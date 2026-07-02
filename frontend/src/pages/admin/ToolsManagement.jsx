@@ -76,6 +76,15 @@ export default function ToolsManagement() {
     toast.success("Deleted"); load();
   };
 
+  const importExtras = async () => {
+    if (!window.confirm("Import all extra tools from the AI Tools Database (skips existing slugs)?")) return;
+    try {
+      const { data } = await api.post("/admin/import-extras");
+      toast.success(`Imported ${data.added} new tools`);
+      load();
+    } catch (e) { toast.error(e.response?.data?.detail || "Failed"); }
+  };
+
   const moneyStr = (form.make_money_module || []).map(m => `${m.title}\n${m.body}`).join("\n---\n");
 
   return (
@@ -90,6 +99,7 @@ export default function ToolsManagement() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"/>
             <input data-testid="tools-search" className="brutal pl-9 h-10" placeholder="Search..." value={q} onChange={e=>{setQ(e.target.value); setPage(1);}}/>
           </div>
+          <button data-testid="tools-import-btn" onClick={importExtras} className="btn-secondary h-10 py-0">Import Extras</button>
           <button data-testid="tools-new-btn" onClick={startNew} className="btn-primary h-10 py-0"><Plus size={14}/> New</button>
         </div>
       </div>

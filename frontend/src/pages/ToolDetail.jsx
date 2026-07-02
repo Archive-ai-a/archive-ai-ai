@@ -1,17 +1,20 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { ExternalLink, Check, X, ArrowLeft, Copy, DollarSign, Sparkles, Coffee } from "lucide-react";
+import { ExternalLink, Check, X, ArrowLeft, Copy, DollarSign, Sparkles, Coffee, Bookmark, BookmarkCheck } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 export default function ToolDetail() {
   const { slug } = useParams();
+  const { user } = useAuth();
   const [tool, setTool] = React.useState(null);
   const [related, setRelated] = React.useState([]);
   const [notFound, setNotFound] = React.useState(false);
+  const [bookmarked, setBookmarked] = React.useState(false);
 
   React.useEffect(() => {
-    setTool(null); setNotFound(false);
+    setTool(null); setNotFound(false); setBookmarked(false);
     api.get(`/tools/${slug}`).then(r => {
       setTool(r.data);
       const cat = r.data.category;
@@ -20,6 +23,26 @@ export default function ToolDetail() {
       });
     }).catch(() => setNotFound(true));
   }, [slug]);
+
+  React.useEffect(() => {
+    if (user && user.role === "user") {
+      api.get("/bookmarks").then(r => setBookmarked(r.data.some(t => t.slug === slug))).catch(() => {});
+    }
+  }, [user, slug]);
+
+  const toggleBookmark = async () => {
+    if (!user || user.role !== "user") {
+      toast.info("Sign in to save tools", { action: { label: "Sign In", onClick: () => window.location.assign("/login") } });
+      return;
+    }
+    if (bookmarked) {
+      await api.delete(`/bookmarks/${slug}`);
+      setBookmarked(false); toast.success("Removed from bookmarks");
+    } else {
+      await api.post(`/bookmarks/${slug}`);
+      setBookmarked(true); toast.success("Saved to bookmarks");
+    }
+  };
 
   if (notFound) return (
     <div className="max-w-3xl mx-auto px-6 py-24 text-center">
@@ -160,6 +183,13 @@ export default function ToolDetail() {
             <a data-testid="visit-tool-btn" href={tool.url} target="_blank" rel="noreferrer" className="btn-primary w-full justify-center">
               Visit {tool.name} <ExternalLink size={14}/>
             </a>
+            <button
+              data-testid="bookmark-btn"
+              onClick={toggleBookmark}
+              className={`w-full justify-center mt-3 border-2 border-black py-3 font-mono text-xs uppercase tracking-widest flex items-center gap-2 ${bookmarked ? 'bg-[var(--signal)] text-white border-[var(--signal)]' : 'hover:bg-black hover:text-white'}`}
+            >
+              {bookmarked ? <><BookmarkCheck size={14}/> Saved</> : <><Bookmark size={14}/> Save</>}
+            </button>
             <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
               <Stat label="Pricing" value={<span className={`tag ${tool.pricing}`}>{tool.pricing}</span>}/>
               <Stat label="Views" value={<span className="font-mono">{tool.view_count || 0}</span>}/>

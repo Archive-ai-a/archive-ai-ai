@@ -77,7 +77,8 @@ export default function Layout({ children }) {
         {children}
       </main>
 
-      {/* FAQ */}
+      {/* FAQ — home page only */}
+      {loc.pathname === "/" && (
       <section className="bg-white border-t-2 border-black">
         <div className="max-w-5xl mx-auto px-6 md:px-12 py-20">
           <div className="overline">FAQ / Common Questions</div>
@@ -89,6 +90,7 @@ export default function Layout({ children }) {
           </div>
         </div>
       </section>
+      )}
 
       <footer className="border-t-2 border-black bg-[var(--text)] text-[var(--bg)]">
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-12 grid md:grid-cols-3 gap-8">

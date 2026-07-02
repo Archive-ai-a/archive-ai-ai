@@ -21,14 +21,20 @@ export default function AuthPage({ mode }) {
     e.preventDefault();
     setLoading(true);
     try {
+      let signedIn;
       if (isRegister) {
-        await register(email.trim(), password, name);
+        signedIn = await register(email.trim(), password, name);
         toast.success("Account created");
       } else {
-        await login(email.trim(), password);
+        signedIn = await login(email.trim(), password);
         toast.success("Signed in");
       }
-      nav("/bookmarks");
+      // Route admins to admin console, everyone else to bookmarks
+      if (signedIn?.role === "admin" || signedIn?.role === "super_admin") {
+        nav("/admin");
+      } else {
+        nav("/bookmarks");
+      }
     } catch (err) {
       const d = err.response?.data?.detail || err.message;
       toast.error(typeof d === "string" ? d : "Failed");

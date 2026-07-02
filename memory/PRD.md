@@ -25,41 +25,45 @@ Palak is building an all-in-one AI tools discovery platform (Futurepedia-inspire
 - Founder — needs research/deck/MVP stack
 - Admin / Palak — curates content, monitors activity, manages other admins
 
-## What's Implemented (2026-02-07)
+## What's Implemented (2026-02-07 → 2026-02-08)
 ### Public site
 - Home: hero + marquee + career packs + featured + trending + new launches + categories CTA + money CTA
-- Directory `/tools` — 27 seeded tools, category / pricing / profession filters + debounced live search
-- Tool detail `/tools/:slug` — Start Here 3-step workflow, Best Use Cases, IRL Integration, Make Money module, Best Prompts (copy-to-clipboard), Pros/Cons, Related tools, sticky Visit CTA, free alternatives sidebar
-- Categories `/categories` — 7 groups × ~40 sub-categories (Personas, Business Ops, Industry Verticals, Technical, AI Agents, Automation, Core)
-- Career Packs `/packs` — 5 curated packs with visual emoji workflow diagrams
+- Directory `/tools` — **124 tools** (27 curated + 97 imported from AI_Tools_Database.xlsx), category / pricing / profession filters + debounced live search
+- Tool detail `/tools/:slug` — Start Here 3-step workflow, Best Use Cases, IRL Integration, Make Money module, Best Prompts (copy-to-clipboard), Pros/Cons, Related tools, sticky Visit CTA + **Save (bookmark)** button, free alternatives sidebar
+- Categories `/categories` — 7 groups × ~40 sub-categories
+- Career Packs `/packs` — 5 curated packs with emoji workflow diagrams
+- **Compare** `/compare?tools=...` — side-by-side comparison table (2–4 tools) with picker modal
 - Money Guides `/money` — monetization strategies grouped by tool
-- Workflows / Prompts `/prompts` — battle-tested prompts library
-- Roadmap `/roadmap` — Now / Next / Later phases
+- Workflows / Prompts `/prompts` — prompts library
+- Roadmap `/roadmap`
 - FAQ accordion in every footer
-- AI Chat widget — Claude Sonnet 4.5 recommender with streaming SSE
+- AI Chat widget (Claude Sonnet 4.5 streaming)
+- **Public user auth** `/login` `/register` + **Bookmarks** `/bookmarks`
 
 ### Admin (`/admin/*`)
 - Login screen w/ auth guard
 - Dashboard — 4 stat cards + DAU 7-day line chart + Top viewed tools bar chart
-- Tools management — table w/ search, pagination, drawer form (all fields), edit/delete
-- Categories management — grouped display, create/edit/delete (parent + sub)
-- Career Packs management — pick tools, add emoji workflow steps
+- Tools management — table w/ search, pagination, drawer form (all fields), edit/delete + **Import Extras** button (bulk imports remaining Excel tools)
+- Categories management (parent + sub)
+- Career Packs management (pick tools + emoji workflow steps)
 - Users management — list + click-through activity feed
-- Admins management (super admin only) — invite, reset password, delete
+- Admins management (super admin only) — invite, reset, delete
+
+### Security
+- **Rate-limited login** (5 fails / 15 min per email → 429)
+- JWT auth via cookie + Bearer header
 
 ## Prioritized Backlog
 
 ### P1 (Next)
-- Public-user auth + bookmarks/save lists (JWT flow ready to enable)
-- Weekly digest email of new/trending tools (SendGrid or Resend)
-- Add JSON schema import to bulk-load 500+ tools via admin
-- Add rate limiting + brute-force lockout on `/api/auth/login`
+- Weekly digest email of new/trending tools (needs Resend or SendGrid integration)
+- Admin bulk JSON upload from UI (endpoint exists as `/api/admin/bulk-import`, needs UI)
+- Email verification on register
 
 ### P2 (Later)
-- Comparison view (`/compare?tools=chatgpt,claude`) with side-by-side
 - User-submitted prompts (moderated in admin)
-- Course + certification track ("AI Money Bootcamp")
-- Affiliate/referral revenue tracking
+- Affiliate/referral revenue tracking (attach ref params to Visit CTA)
+- Course + certification track
 
 ## Credentials (seeded)
 - Super Admin: `soumyaranjansrb9@gmail.com` / `Srb123@#`

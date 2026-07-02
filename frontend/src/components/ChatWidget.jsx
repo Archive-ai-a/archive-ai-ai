@@ -76,9 +76,9 @@ export default function ChatWidget() {
     <>
       {!open && (
         <button
-          data-testid="chat-widget-open"
-          onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-black text-white w-14 h-14 flex items-center justify-center border-2 border-white brutal-shadow hover:bg-[var(--signal)] hover:border-black transition-colors"
+        data-testid="chat-widget-open"
+        onClick={() => setOpen(true)}
+        className="fixed bottom-24 right-6 z-50 bg-black text-white w-14 h-14 flex items-center justify-center border-2 border-white brutal-shadow hover:bg-[var(--signal)] hover:border-black transition-colors"
           aria-label="Open AI assistant"
         >
           <MessageSquare size={22} />
@@ -86,7 +86,7 @@ export default function ChatWidget() {
       )}
 
       {open && (
-        <div data-testid="chat-widget-panel" className="fixed bottom-6 right-6 z-50 w-[92vw] sm:w-[420px] h-[600px] max-h-[80vh] bg-white border-2 border-black brutal-shadow-lg flex flex-col">
+        <div data-testid="chat-widget-panel" className="fixed bottom-24 right-6 z-50 w-[92vw] sm:w-[420px] h-[600px] max-h-[80vh] bg-white border-2 border-black brutal-shadow-lg flex flex-col">
           <div className="flex items-center justify-between border-b-2 border-black px-4 py-3 bg-[var(--text)] text-[var(--bg)]">
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-[var(--signal)]" />

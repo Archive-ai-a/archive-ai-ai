@@ -10,12 +10,12 @@ import UsersManagement from "./UsersManagement";
 import AdminsManagement from "./AdminsManagement";
 
 const LINKS = [
-  { to: "", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "tools", label: "Tools", icon: Wrench },
-  { to: "categories", label: "Categories", icon: Layers },
-  { to: "packs", label: "Career Packs", icon: Package },
-  { to: "users", label: "Users", icon: Users },
-  { to: "admins", label: "Admins", icon: ShieldCheck, superOnly: true },
+  { to: "/admin", label: "Dashboard", testid: "dashboard", icon: LayoutDashboard, end: true },
+  { to: "/admin/tools", label: "Tools", testid: "tools", icon: Wrench },
+  { to: "/admin/categories", label: "Categories", testid: "categories", icon: Layers },
+  { to: "/admin/packs", label: "Career Packs", testid: "packs", icon: Package },
+  { to: "/admin/users", label: "Users", testid: "users", icon: Users },
+  { to: "/admin/admins", label: "Admins", testid: "admins", icon: ShieldCheck, superOnly: true },
 ];
 
 export default function AdminShell() {
@@ -45,7 +45,7 @@ export default function AdminShell() {
         </div>
         <nav className="p-3 space-y-1">
           {LINKS.filter(l => !l.superOnly || user.role === "super_admin").map(l => (
-            <NavLink key={l.to} to={l.to} end={l.end} data-testid={`admin-nav-${l.label.toLowerCase().replace(/ /g,'-')}`}
+            <NavLink key={l.to} to={l.to} end={l.end} data-testid={`admin-nav-${l.testid}`}
               className={({isActive}) => `flex items-center gap-3 px-3 py-2 font-mono text-xs uppercase tracking-widest ${isActive?'bg-[var(--signal)] text-white':'hover:bg-white/10'}`}>
               <l.icon size={16}/> {l.label}
             </NavLink>
@@ -79,6 +79,7 @@ export default function AdminShell() {
             <Route path="packs" element={<CareerPacksManagement/>}/>
             <Route path="users" element={<UsersManagement/>}/>
             <Route path="admins" element={<AdminsManagement/>}/>
+            <Route path="*" element={<Navigate to="/admin" replace/>}/>
           </Routes>
         </main>
       </div>

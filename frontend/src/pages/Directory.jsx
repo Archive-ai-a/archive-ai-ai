@@ -35,6 +35,11 @@ export default function Directory() {
   };
 
   const onSearch = (e) => { e.preventDefault(); update("q", q); };
+  React.useEffect(() => {
+    const id = setTimeout(() => update("q", q), 300);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
   const clearAll = () => setParams(new URLSearchParams());
   const hasFilters = category || pricing || profession || params.get("q");
 

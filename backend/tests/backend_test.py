@@ -19,8 +19,8 @@ if not BASE_URL:
 
 API = f"{BASE_URL}/api"
 
-SUPER_EMAIL = "soumyaranjansrb9@gmail.com"
-SUPER_PASS = "Srb123@#"
+SUPER_EMAIL = os.environ["SUPER_ADMIN_EMAIL"]
+SUPER_PASS = os.environ["SUPER_ADMIN_PASSWORD"]
 
 
 # ---------- fixtures ----------

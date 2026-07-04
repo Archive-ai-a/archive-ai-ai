@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 export default function MoneyGuides() {
   const [tools, setTools] = React.useState([]);
   React.useEffect(() => {
-    api.get("/tools").then(r => setTools(r.data.filter(t => (t.make_money_module||[]).length > 0)));
+    api.get("/tools").then(r => setTools(r.data.filter(t => (t.make_money_module||[]).length > 0))).catch(() => {});
   }, []);
 
   return (

@@ -62,11 +62,22 @@ export default function ChatWidget() {
                 return copy;
               });
             }
-          } catch { /* ignore parse error */ }
+          } catch (parseErr) {
+            console.warn("ChatWidget: failed to parse SSE chunk", parseErr);
+          }
         }
       }
     } catch (e) {
-      setMessages(m => [...m, { role: "assistant", content: "Network error. Try again." }]);
+      console.error("ChatWidget stream error:", e);
+      setMessages(m => {
+        const last = m[m.length - 1];
+        if (last?.role === "assistant" && !last.content) {
+          const copy = [...m];
+          copy[copy.length - 1] = { role: "assistant", content: "Network error. Try again." };
+          return copy;
+        }
+        return [...m, { role: "assistant", content: "Network error. Try again." }];
+      });
     } finally {
       setLoading(false);
     }

@@ -8,7 +8,7 @@ export default function Prompts() {
   const [tools, setTools] = React.useState([]);
   const [filter, setFilter] = React.useState("");
 
-  React.useEffect(() => { api.get("/tools").then(r => setTools(r.data.filter(t => (t.best_prompts||[]).length > 0))); }, []);
+  React.useEffect(() => { api.get("/tools").then(r => setTools(r.data.filter(t => (t.best_prompts||[]).length > 0))).catch(() => {}); }, []);
 
   const copy = (p) => { navigator.clipboard.writeText(p); toast.success("Copied to clipboard"); };
   const filtered = tools.filter(t =>

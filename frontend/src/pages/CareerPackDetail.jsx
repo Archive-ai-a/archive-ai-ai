@@ -9,16 +9,25 @@ export default function CareerPackDetail() {
   const [pack, setPack] = React.useState(null);
   const [tools, setTools] = React.useState([]);
 
+  const [notFound, setNotFound] = React.useState(false);
+
   React.useEffect(() => {
+    setNotFound(false);
     api.get(`/career-packs/${slug}`).then(r => {
       setPack(r.data);
       api.get("/tools").then(rr => {
         const map = new Map(rr.data.map(t => [t.slug, t]));
         setTools(r.data.tool_slugs.map(s => map.get(s)).filter(Boolean));
-      });
-    });
+      }).catch(() => {});
+    }).catch(() => setNotFound(true));
   }, [slug]);
 
+  if (notFound) return (
+    <div className="max-w-3xl mx-auto px-6 py-24 text-center">
+      <div className="font-display font-black text-4xl">Pack not found</div>
+      <Link to="/packs" className="btn-primary mt-6 inline-flex">← Back to Career Packs</Link>
+    </div>
+  );
   if (!pack) return <div className="max-w-7xl mx-auto px-6 py-12 font-mono">Loading...</div>;
 
   return (

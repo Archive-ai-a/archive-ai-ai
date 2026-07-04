@@ -17,6 +17,8 @@ from datetime import datetime, timezone, timedelta
 
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
 
+import jwt as pyjwt
+
 from auth_utils import hash_password, verify_password, create_access_token, decode_token, extract_token
 
 mongo_url = os.environ['MONGO_URL']
@@ -184,7 +186,7 @@ async def current_user(request: Request) -> Optional[dict]:
         return None
     try:
         payload = decode_token(token)
-    except Exception:
+    except (pyjwt.ExpiredSignatureError, pyjwt.InvalidTokenError):
         return None
     user = await _get_user_by_id(payload.get("sub"))
     if user:
@@ -318,11 +320,13 @@ async def bulk_import(payload: BulkImportIn, _: dict = Depends(require_admin)):
     added = 0
     updated = 0
     skipped = 0
-    for raw in payload.tools:
+    errors = []
+    for idx, raw in enumerate(payload.tools):
         try:
             data = ToolIn(**{**{"pricing": "freemium", "url": ""}, **raw}).model_dump()
-        except Exception:
+        except Exception as e:
             skipped += 1
+            errors.append({"index": idx, "slug": raw.get("slug", "unknown"), "error": str(e)})
             continue
         existing = await db.tools.find_one({"slug": data["slug"]})
         if existing:
@@ -338,7 +342,10 @@ async def bulk_import(payload: BulkImportIn, _: dict = Depends(require_admin)):
             tool = Tool(**data)
             await db.tools.insert_one(tool.model_dump())
             added += 1
-    return {"added": added, "updated": updated, "skipped": skipped}
+    result = {"added": added, "updated": updated, "skipped": skipped}
+    if errors:
+        result["errors"] = errors
+    return result
 
 
 @api_router.post("/admin/import-extras")
@@ -358,6 +365,7 @@ async def import_extras(_: dict = Depends(require_admin)):
 
 
 # ---------- Admin: admins
+@api_router.get("/admin/admins")
 async def list_admins(_: dict = Depends(require_admin)):
     docs = await db.users.find(
         {"role": {"$in": ["admin", "super_admin"]}},
@@ -602,12 +610,16 @@ async def get_user(uid: str, _: dict = Depends(require_admin)):
 
 @api_router.post("/activity/log")
 async def log_activity(event: dict, request: Request):
-    user = await current_user(request)
-    event["user_id"] = user["id"] if user else None
-    event["ts"] = now_iso()
-    event.setdefault("type", "generic")
-    await db.activity.insert_one(event)
-    return {"ok": True}
+    try:
+        user = await current_user(request)
+        event["user_id"] = user["id"] if user else None
+        event["ts"] = now_iso()
+        event.setdefault("type", "generic")
+        await db.activity.insert_one(event)
+        return {"ok": True}
+    except Exception as e:
+        logger.error("Failed to log activity: %s", e)
+        raise HTTPException(500, "Failed to log activity")
 
 
 @api_router.get("/admin/analytics")
@@ -803,23 +815,27 @@ async def on_start():
         await db.tools.create_index("slug", unique=True)
         await db.categories.create_index("slug", unique=True)
         await db.career_packs.create_index("slug", unique=True)
+    except Exception as e:
+        logger.critical("Failed to create database indexes: %s", e)
+        raise
+    try:
         await _seed_super_admin()
         await _seed_content(force=False)
-        # Auto-import extra tools (idempotent — skips existing slugs)
-        try:
-            from extra_tools import build_extra_tools
-            tools = build_extra_tools()
-            existing = set()
-            async for d in db.tools.find({}, {"_id": 0, "slug": 1}):
-                existing.add(d["slug"])
-            new = [Tool(**t).model_dump() for t in tools if t["slug"] not in existing]
-            if new:
-                await db.tools.insert_many(new)
-                logger.info("Imported %d extra tools", len(new))
-        except Exception as e:
-            logger.exception("extra import failed: %s", e)
     except Exception as e:
-        logger.exception("startup error: %s", e)
+        logger.critical("Failed to seed initial data: %s", e)
+        raise
+    try:
+        from extra_tools import build_extra_tools
+        tools = build_extra_tools()
+        existing = set()
+        async for d in db.tools.find({}, {"_id": 0, "slug": 1}):
+            existing.add(d["slug"])
+        new = [Tool(**t).model_dump() for t in tools if t["slug"] not in existing]
+        if new:
+            await db.tools.insert_many(new)
+            logger.info("Imported %d extra tools", len(new))
+    except Exception as e:
+        logger.exception("Extra tools import failed (non-fatal): %s", e)
 
 
 @app.on_event("shutdown")

@@ -8,14 +8,18 @@ export default function UsersManagement() {
   const [selected, setSelected] = React.useState(null);
   const [activity, setActivity] = React.useState([]);
 
-  React.useEffect(() => { api.get("/admin/users").then(r => setUsers(r.data)); }, []);
+  React.useEffect(() => { api.get("/admin/users").then(r => setUsers(r.data)).catch(() => {}); }, []);
 
   const filtered = users.filter(u => !q || u.email.toLowerCase().includes(q.toLowerCase()) || (u.name||"").toLowerCase().includes(q.toLowerCase()));
 
   const open = async (u) => {
     setSelected(u);
-    const { data } = await api.get(`/admin/users/${u.id}`);
-    setActivity(data.activity || []);
+    try {
+      const { data } = await api.get(`/admin/users/${u.id}`);
+      setActivity(data.activity || []);
+    } catch {
+      setActivity([]);
+    }
   };
 
   return (

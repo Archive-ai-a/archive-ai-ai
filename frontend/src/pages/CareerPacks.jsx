@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 
 export default function CareerPacks() {
   const [packs, setPacks] = React.useState([]);
-  React.useEffect(() => { api.get("/career-packs").then(r => setPacks(r.data)); }, []);
+  React.useEffect(() => { api.get("/career-packs").then(r => setPacks(r.data)).catch(() => {}); }, []);
 
   return (
     <div data-testid="packs-page" className="max-w-7xl mx-auto px-6 md:px-12 py-12">

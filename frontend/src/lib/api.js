@@ -12,3 +12,18 @@ api.interceptors.request.use((cfg) => {
   if (t) cfg.headers.Authorization = `Bearer ${t}`;
   return cfg;
 });
+
+// Clear stale auth on 401 responses (except login/register endpoints)
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (
+      err.response?.status === 401 &&
+      !err.config?.url?.includes("/auth/login") &&
+      !err.config?.url?.includes("/auth/register")
+    ) {
+      localStorage.removeItem("auth_token");
+    }
+    return Promise.reject(err);
+  }
+);

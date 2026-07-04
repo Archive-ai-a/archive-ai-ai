@@ -5,7 +5,9 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGri
 
 export default function Dashboard() {
   const [data, setData] = React.useState(null);
-  React.useEffect(() => { api.get("/admin/analytics").then(r => setData(r.data)); }, []);
+  const [error, setError] = React.useState(false);
+  React.useEffect(() => { api.get("/admin/analytics").then(r => setData(r.data)).catch(() => setError(true)); }, []);
+  if (error) return <div className="font-mono text-[var(--signal)]">Failed to load analytics.</div>;
   if (!data) return <div className="font-mono">Loading...</div>;
 
   const stats = [

@@ -12,7 +12,7 @@ export default function AdminsManagement() {
   const [resetOpen, setResetOpen] = React.useState(null);
   const [resetPwd, setResetPwd] = React.useState("");
 
-  const load = () => api.get("/admin/admins").then(r => setAdmins(r.data));
+  const load = () => api.get("/admin/admins").then(r => setAdmins(r.data)).catch(() => {});
   React.useEffect(() => { load(); }, []);
 
   const create = async (e) => {

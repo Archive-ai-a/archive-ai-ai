@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 
 export default function CategoriesPage() {
   const [cats, setCats] = React.useState([]);
-  React.useEffect(() => { api.get("/categories").then(r => setCats(r.data)); }, []);
+  React.useEffect(() => { api.get("/categories").then(r => setCats(r.data)).catch(() => {}); }, []);
 
   const parents = cats.filter(c => !c.parent_slug);
   const subsBy = (slug) => cats.filter(c => c.parent_slug === slug);

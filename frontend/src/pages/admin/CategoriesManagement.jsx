@@ -11,7 +11,7 @@ export default function CategoriesManagement() {
   const [editing, setEditing] = React.useState(null);
   const [form, setForm] = React.useState(empty());
 
-  const load = () => api.get("/categories").then(r => setCats(r.data));
+  const load = () => api.get("/categories").then(r => setCats(r.data)).catch(() => toast.error("Failed to load categories"));
   React.useEffect(() => { load(); }, []);
 
   const parents = cats.filter(c => !c.parent_slug);
@@ -32,8 +32,10 @@ export default function CategoriesManagement() {
   };
   const del = async (slug) => {
     if (!window.confirm(`Delete ${slug}?`)) return;
-    await api.delete(`/categories/${slug}`);
-    toast.success("Deleted"); load();
+    try {
+      await api.delete(`/categories/${slug}`);
+      toast.success("Deleted"); load();
+    } catch (e) { toast.error(e.response?.data?.detail || "Failed to delete"); }
   };
 
   return (

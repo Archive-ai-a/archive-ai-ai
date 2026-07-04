@@ -17,9 +17,13 @@ export default function Bookmarks() {
   React.useEffect(() => { if (user) load(); else if (checked) setLoading(false); }, [user, checked, load]);
 
   const remove = async (slug) => {
-    await api.delete(`/bookmarks/${slug}`);
-    toast.success("Removed");
-    load();
+    try {
+      await api.delete(`/bookmarks/${slug}`);
+      toast.success("Removed");
+      load();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || "Failed to remove bookmark");
+    }
   };
 
   if (!checked) return <div className="max-w-7xl mx-auto px-6 py-12 font-mono">Loading...</div>;

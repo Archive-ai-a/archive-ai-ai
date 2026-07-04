@@ -17,7 +17,7 @@ export default function Directory() {
   const pricing = params.get("pricing") || "";
   const profession = params.get("profession") || "";
 
-  React.useEffect(() => { api.get("/categories").then(r => setCategories(r.data)); }, []);
+  React.useEffect(() => { api.get("/categories").then(r => setCategories(r.data)).catch(() => {}); }, []);
 
   React.useEffect(() => {
     const search = new URLSearchParams();
@@ -25,7 +25,7 @@ export default function Directory() {
     if (pricing) search.set("pricing", pricing);
     if (profession) search.set("profession", profession);
     if (params.get("q")) search.set("q", params.get("q"));
-    api.get(`/tools?${search.toString()}`).then(r => setTools(r.data));
+    api.get(`/tools?${search.toString()}`).then(r => setTools(r.data)).catch(() => {});
   }, [category, pricing, profession, params]);
 
   const update = (key, value) => {

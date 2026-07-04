@@ -15,8 +15,8 @@ export default function CareerPacksManagement() {
   const [editing, setEditing] = React.useState(null);
   const [form, setForm] = React.useState(empty());
 
-  const load = () => api.get("/career-packs").then(r => setPacks(r.data));
-  React.useEffect(() => { load(); api.get("/tools").then(r => setTools(r.data)); }, []);
+  const load = () => api.get("/career-packs").then(r => setPacks(r.data)).catch(() => toast.error("Failed to load career packs"));
+  React.useEffect(() => { load(); api.get("/tools").then(r => setTools(r.data)).catch(() => {}); }, []);
 
   const startNew = () => { setEditing(null); setForm(empty()); setOpen(true); };
   const startEdit = (p) => { setEditing(p.slug); setForm({ ...p }); setOpen(true); };
@@ -37,8 +37,10 @@ export default function CareerPacksManagement() {
   };
   const del = async (slug) => {
     if (!window.confirm(`Delete ${slug}?`)) return;
-    await api.delete(`/career-packs/${slug}`);
-    toast.success("Deleted"); load();
+    try {
+      await api.delete(`/career-packs/${slug}`);
+      toast.success("Deleted"); load();
+    } catch (e) { toast.error(e.response?.data?.detail || "Failed to delete"); }
   };
 
   return (

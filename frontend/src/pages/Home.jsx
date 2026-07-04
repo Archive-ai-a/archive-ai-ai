@@ -13,10 +13,10 @@ export default function Home() {
   const nav = useNavigate();
 
   React.useEffect(() => {
-    api.get("/tools?featured=true").then(r => setFeatured(r.data.slice(0, 6)));
-    api.get("/tools?trending=true").then(r => setTrending(r.data.slice(0, 8)));
-    api.get("/tools?new_launch=true").then(r => setNewLaunch(r.data.slice(0, 6)));
-    api.get("/career-packs").then(r => setPacks(r.data));
+    api.get("/tools?featured=true").then(r => setFeatured(r.data.slice(0, 6))).catch(() => {});
+    api.get("/tools?trending=true").then(r => setTrending(r.data.slice(0, 8))).catch(() => {});
+    api.get("/tools?new_launch=true").then(r => setNewLaunch(r.data.slice(0, 6))).catch(() => {});
+    api.get("/career-packs").then(r => setPacks(r.data)).catch(() => {});
   }, []);
 
   const onSearch = (e) => { e.preventDefault(); nav(`/tools?q=${encodeURIComponent(q)}`); };

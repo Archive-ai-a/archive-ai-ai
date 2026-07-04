@@ -35,12 +35,16 @@ export default function ToolDetail() {
       toast.info("Sign in to save tools", { action: { label: "Sign In", onClick: () => window.location.assign("/login") } });
       return;
     }
-    if (bookmarked) {
-      await api.delete(`/bookmarks/${slug}`);
-      setBookmarked(false); toast.success("Removed from bookmarks");
-    } else {
-      await api.post(`/bookmarks/${slug}`);
-      setBookmarked(true); toast.success("Saved to bookmarks");
+    try {
+      if (bookmarked) {
+        await api.delete(`/bookmarks/${slug}`);
+        setBookmarked(false); toast.success("Removed from bookmarks");
+      } else {
+        await api.post(`/bookmarks/${slug}`);
+        setBookmarked(true); toast.success("Saved to bookmarks");
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.detail || "Failed to update bookmark");
     }
   };
 

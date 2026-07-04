@@ -12,7 +12,7 @@ export default function Compare() {
 
   const slugs = React.useMemo(() => (params.get("tools") || "").split(",").filter(Boolean), [params]);
 
-  React.useEffect(() => { api.get("/tools").then(r => setAllTools(r.data)); }, []);
+  React.useEffect(() => { api.get("/tools").then(r => setAllTools(r.data)).catch(() => {}); }, []);
 
   React.useEffect(() => {
     if (!slugs.length) { setTools([]); return; }

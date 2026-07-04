@@ -10,7 +10,7 @@ const STATUS_ICON = {
 
 export default function Roadmap() {
   const [phases, setPhases] = React.useState([]);
-  React.useEffect(() => { api.get("/roadmap").then(r => setPhases(r.data)); }, []);
+  React.useEffect(() => { api.get("/roadmap").then(r => setPhases(r.data)).catch(() => {}); }, []);
 
   return (
     <div data-testid="roadmap-page" className="max-w-5xl mx-auto px-6 md:px-12 py-12">

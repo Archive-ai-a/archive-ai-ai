@@ -23,8 +23,8 @@ export default function ToolsManagement() {
   const [open, setOpen] = React.useState(false);
   const perPage = 10;
 
-  const load = () => api.get("/tools").then(r => setTools(r.data));
-  React.useEffect(() => { load(); api.get("/categories").then(r => setCats(r.data)); }, []);
+  const load = () => api.get("/tools").then(r => setTools(r.data)).catch(() => toast.error("Failed to load tools"));
+  React.useEffect(() => { load(); api.get("/categories").then(r => setCats(r.data)).catch(() => {}); }, []);
 
   const filtered = tools.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()) || t.slug.toLowerCase().includes(q.toLowerCase()));
   const pages = Math.max(1, Math.ceil(filtered.length / perPage));
@@ -72,8 +72,10 @@ export default function ToolsManagement() {
   };
   const del = async (slug) => {
     if (!window.confirm(`Delete ${slug}?`)) return;
-    await api.delete(`/tools/${slug}`);
-    toast.success("Deleted"); load();
+    try {
+      await api.delete(`/tools/${slug}`);
+      toast.success("Deleted"); load();
+    } catch (e) { toast.error(e.response?.data?.detail || "Failed to delete"); }
   };
 
   const importExtras = async () => {

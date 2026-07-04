@@ -186,7 +186,7 @@ async def current_user(request: Request) -> Optional[dict]:
         return None
     try:
         payload = decode_token(token)
-    except (pyjwt.ExpiredSignatureError, pyjwt.InvalidTokenError):
+    except pyjwt.PyJWTError:
         return None
     user = await _get_user_by_id(payload.get("sub"))
     if user:

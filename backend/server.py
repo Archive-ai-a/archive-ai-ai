@@ -18,6 +18,7 @@ from datetime import datetime, timezone, timedelta
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
 
 from auth_utils import hash_password, verify_password, create_access_token, decode_token, extract_token
+from crud_utils import find_by_slug, delete_by_slug, check_slug_available, upsert_by_slug, import_by_slug
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -345,16 +346,8 @@ async def bulk_import(payload: BulkImportIn, _: dict = Depends(require_admin)):
 async def import_extras(_: dict = Depends(require_admin)):
     from extra_tools import build_extra_tools
     tools = build_extra_tools()
-    existing_slugs = set()
-    async for d in db.tools.find({}, {"_id": 0, "slug": 1}):
-        existing_slugs.add(d["slug"])
-    added = 0
-    for t in tools:
-        if t["slug"] in existing_slugs:
-            continue
-        await db.tools.insert_one(Tool(**t).model_dump())
-        added += 1
-    return {"added": added, "total_available": len(tools), "existing": len(existing_slugs)}
+    added = await import_by_slug(db.tools, tools, model_cls=Tool)
+    return {"added": added, "total_available": len(tools)}
 
 
 # ---------- Admin: admins
@@ -446,9 +439,7 @@ async def list_tools(
 
 @api_router.get("/tools/{slug}")
 async def get_tool(slug: str):
-    doc = await db.tools.find_one({"slug": slug}, {"_id": 0})
-    if not doc:
-        raise HTTPException(404, "Tool not found")
+    doc = await find_by_slug(db.tools, slug)
     # Increment view count
     await db.tools.update_one({"slug": slug}, {"$inc": {"view_count": 1}})
     await db.activity.insert_one({"type": "tool_view", "slug": slug, "ts": now_iso()})
@@ -457,9 +448,7 @@ async def get_tool(slug: str):
 
 @api_router.post("/tools")
 async def create_tool(payload: ToolIn, _: dict = Depends(require_admin)):
-    existing = await db.tools.find_one({"slug": payload.slug})
-    if existing:
-        raise HTTPException(400, "Slug exists")
+    await check_slug_available(db.tools, payload.slug)
     data = payload.model_dump()
     if not data.get("category") and data.get("category_slugs"):
         data["category"] = data["category_slugs"][0]
@@ -470,23 +459,14 @@ async def create_tool(payload: ToolIn, _: dict = Depends(require_admin)):
 
 @api_router.put("/tools/{slug}")
 async def update_tool(slug: str, payload: ToolIn, _: dict = Depends(require_admin)):
-    existing = await db.tools.find_one({"slug": slug}, {"_id": 0})
-    if not existing:
-        raise HTTPException(404, "Tool not found")
     data = payload.model_dump()
-    data["id"] = existing["id"]
-    data["created_at"] = existing.get("created_at", now_iso())
-    data["view_count"] = existing.get("view_count", 0)
-    await db.tools.update_one({"slug": slug}, {"$set": data})
+    data = await upsert_by_slug(db.tools, slug, data, preserve_fields=("id", "created_at", "view_count"))
     return data
 
 
 @api_router.delete("/tools/{slug}")
 async def delete_tool(slug: str, _: dict = Depends(require_admin)):
-    r = await db.tools.delete_one({"slug": slug})
-    if r.deleted_count == 0:
-        raise HTTPException(404, "Tool not found")
-    return {"ok": True}
+    return await delete_by_slug(db.tools, slug)
 
 
 # ---------- Categories ----------
@@ -498,9 +478,7 @@ async def list_categories():
 
 @api_router.post("/categories")
 async def create_category(payload: CategoryIn, _: dict = Depends(require_admin)):
-    exists = await db.categories.find_one({"slug": payload.slug})
-    if exists:
-        raise HTTPException(400, "Slug exists")
+    await check_slug_available(db.categories, payload.slug)
     doc = Category(**payload.model_dump()).model_dump()
     await db.categories.insert_one(doc)
     doc.pop("_id", None)
@@ -509,21 +487,14 @@ async def create_category(payload: CategoryIn, _: dict = Depends(require_admin))
 
 @api_router.put("/categories/{slug}")
 async def update_category(slug: str, payload: CategoryIn, _: dict = Depends(require_admin)):
-    ex = await db.categories.find_one({"slug": slug}, {"_id": 0})
-    if not ex:
-        raise HTTPException(404, "Not found")
     data = payload.model_dump()
-    data["id"] = ex["id"]
-    await db.categories.update_one({"slug": slug}, {"$set": data})
+    data = await upsert_by_slug(db.categories, slug, data, preserve_fields=("id",))
     return data
 
 
 @api_router.delete("/categories/{slug}")
 async def delete_category(slug: str, _: dict = Depends(require_admin)):
-    r = await db.categories.delete_one({"slug": slug})
-    if r.deleted_count == 0:
-        raise HTTPException(404, "Not found")
-    return {"ok": True}
+    return await delete_by_slug(db.categories, slug)
 
 
 # ---------- Career Packs ----------
@@ -535,17 +506,12 @@ async def list_packs():
 
 @api_router.get("/career-packs/{slug}")
 async def get_pack(slug: str):
-    doc = await db.career_packs.find_one({"slug": slug}, {"_id": 0})
-    if not doc:
-        raise HTTPException(404, "Not found")
-    return doc
+    return await find_by_slug(db.career_packs, slug)
 
 
 @api_router.post("/career-packs")
 async def create_pack(payload: CareerPackIn, _: dict = Depends(require_admin)):
-    ex = await db.career_packs.find_one({"slug": payload.slug})
-    if ex:
-        raise HTTPException(400, "Slug exists")
+    await check_slug_available(db.career_packs, payload.slug)
     doc = CareerPack(**payload.model_dump()).model_dump()
     await db.career_packs.insert_one(doc)
     doc.pop("_id", None)
@@ -554,21 +520,14 @@ async def create_pack(payload: CareerPackIn, _: dict = Depends(require_admin)):
 
 @api_router.put("/career-packs/{slug}")
 async def update_pack(slug: str, payload: CareerPackIn, _: dict = Depends(require_admin)):
-    ex = await db.career_packs.find_one({"slug": slug}, {"_id": 0})
-    if not ex:
-        raise HTTPException(404, "Not found")
     data = payload.model_dump()
-    data["id"] = ex["id"]
-    await db.career_packs.update_one({"slug": slug}, {"$set": data})
+    data = await upsert_by_slug(db.career_packs, slug, data, preserve_fields=("id",))
     return data
 
 
 @api_router.delete("/career-packs/{slug}")
 async def delete_pack(slug: str, _: dict = Depends(require_admin)):
-    r = await db.career_packs.delete_one({"slug": slug})
-    if r.deleted_count == 0:
-        raise HTTPException(404, "Not found")
-    return {"ok": True}
+    return await delete_by_slug(db.career_packs, slug)
 
 
 # ---------- FAQ / Roadmap ----------
@@ -809,13 +768,9 @@ async def on_start():
         try:
             from extra_tools import build_extra_tools
             tools = build_extra_tools()
-            existing = set()
-            async for d in db.tools.find({}, {"_id": 0, "slug": 1}):
-                existing.add(d["slug"])
-            new = [Tool(**t).model_dump() for t in tools if t["slug"] not in existing]
-            if new:
-                await db.tools.insert_many(new)
-                logger.info("Imported %d extra tools", len(new))
+            added = await import_by_slug(db.tools, tools, model_cls=Tool)
+            if added:
+                logger.info("Imported %d extra tools", added)
         except Exception as e:
             logger.exception("extra import failed: %s", e)
     except Exception as e:

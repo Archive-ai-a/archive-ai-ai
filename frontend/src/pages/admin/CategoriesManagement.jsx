@@ -1,7 +1,9 @@
 import React from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import { Plus, Trash2, Edit3, X } from "lucide-react";
+import { apiErrorToast } from "@/lib/apiErrorToast";
+import { Plus, Trash2, Edit3 } from "lucide-react";
+import { Field, AdminPageHeader, SlidePanel } from "@/components/admin";
 
 const empty = () => ({ name: "", slug: "", description: "", icon: "Sparkles", parent_slug: "", sort: 100 });
 
@@ -28,7 +30,7 @@ export default function CategoriesManagement() {
       if (editing) { await api.put(`/categories/${editing}`, payload); toast.success("Updated"); }
       else { await api.post("/categories", payload); toast.success("Created"); }
       setOpen(false); load();
-    } catch (e) { toast.error(e.response?.data?.detail || "Failed"); }
+    } catch (e) { apiErrorToast(e); }
   };
   const del = async (slug) => {
     if (!window.confirm(`Delete ${slug}?`)) return;
@@ -38,13 +40,9 @@ export default function CategoriesManagement() {
 
   return (
     <div data-testid="admin-categories">
-      <div className="flex items-end justify-between flex-wrap gap-3 mb-6 border-b-2 border-black pb-4">
-        <div>
-          <div className="overline">Content</div>
-          <h1 className="font-display font-black text-3xl tracking-tighter">Categories ({cats.length})</h1>
-        </div>
+      <AdminPageHeader overline="Content" title="Categories" count={cats.length}>
         <button data-testid="cat-new-btn" onClick={startNew} className="btn-primary"><Plus size={14}/> New Category</button>
-      </div>
+      </AdminPageHeader>
 
       <div className="space-y-6">
         {parents.map(p => (
@@ -77,36 +75,25 @@ export default function CategoriesManagement() {
         ))}
       </div>
 
-      {open && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-end" onClick={()=>setOpen(false)}>
-          <div className="w-full max-w-lg bg-white h-full overflow-y-auto border-l-2 border-black" onClick={e=>e.stopPropagation()}>
-            <div className="p-6 border-b-2 border-black flex items-center justify-between">
-              <div className="font-display font-black text-2xl tracking-tighter">{editing || "New Category"}</div>
-              <button onClick={()=>setOpen(false)} className="border-2 border-black p-2"><X size={14}/></button>
-            </div>
-            <form onSubmit={submit} className="p-6 space-y-4">
-              <Field label="Name"><input required className="brutal" value={form.name} onChange={e=>upd("name", e.target.value)}/></Field>
-              <Field label="Slug"><input required className="brutal" disabled={!!editing} value={form.slug} onChange={e=>upd("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}/></Field>
-              <Field label="Description"><textarea className="brutal min-h-[70px]" value={form.description} onChange={e=>upd("description", e.target.value)}/></Field>
-              <Field label="Icon (lucide-react name, e.g. Sparkles)"><input className="brutal" value={form.icon} onChange={e=>upd("icon", e.target.value)}/></Field>
-              <Field label="Parent Category (leave empty for top-level)">
-                <select className="brutal" value={form.parent_slug} onChange={e=>upd("parent_slug", e.target.value)}>
-                  <option value="">— top-level —</option>
-                  {parents.map(p => <option key={p.slug} value={p.slug}>{p.name}</option>)}
-                </select>
-              </Field>
-              <Field label="Sort"><input type="number" className="brutal" value={form.sort} onChange={e=>upd("sort", parseInt(e.target.value)||100)}/></Field>
-              <div className="flex gap-3 pt-4 border-t border-black">
-                <button type="submit" className="btn-primary">{editing?"Update":"Create"}</button>
-                <button type="button" onClick={()=>setOpen(false)} className="btn-secondary">Cancel</button>
-              </div>
-            </form>
+      <SlidePanel open={open} onClose={() => setOpen(false)} title={editing || "New Category"} maxWidth="max-w-lg">
+        <form onSubmit={submit} className="p-6 space-y-4">
+          <Field label="Name"><input required className="brutal" value={form.name} onChange={e=>upd("name", e.target.value)}/></Field>
+          <Field label="Slug"><input required className="brutal" disabled={!!editing} value={form.slug} onChange={e=>upd("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}/></Field>
+          <Field label="Description"><textarea className="brutal min-h-[70px]" value={form.description} onChange={e=>upd("description", e.target.value)}/></Field>
+          <Field label="Icon (lucide-react name, e.g. Sparkles)"><input className="brutal" value={form.icon} onChange={e=>upd("icon", e.target.value)}/></Field>
+          <Field label="Parent Category (leave empty for top-level)">
+            <select className="brutal" value={form.parent_slug} onChange={e=>upd("parent_slug", e.target.value)}>
+              <option value="">— top-level —</option>
+              {parents.map(p => <option key={p.slug} value={p.slug}>{p.name}</option>)}
+            </select>
+          </Field>
+          <Field label="Sort"><input type="number" className="brutal" value={form.sort} onChange={e=>upd("sort", parseInt(e.target.value)||100)}/></Field>
+          <div className="flex gap-3 pt-4 border-t border-black">
+            <button type="submit" className="btn-primary">{editing?"Update":"Create"}</button>
+            <button type="button" onClick={()=>setOpen(false)} className="btn-secondary">Cancel</button>
           </div>
-        </div>
-      )}
+        </form>
+      </SlidePanel>
     </div>
   );
-}
-function Field({ label, children }) {
-  return <label className="block"><div className="overline mb-1">{label}</div>{children}</label>;
 }

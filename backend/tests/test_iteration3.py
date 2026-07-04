@@ -15,8 +15,8 @@ if not BASE_URL:
                 BASE_URL = line.split("=", 1)[1].strip().rstrip("/")
 API = f"{BASE_URL}/api"
 
-SUPER_EMAIL = "soumyaranjansrb9@gmail.com"
-SUPER_PASS = "Srb123@#"
+SUPER_EMAIL = os.environ["SUPER_ADMIN_EMAIL"]
+SUPER_PASS = os.environ["SUPER_ADMIN_PASSWORD"]
 
 
 @pytest.fixture(scope="module")

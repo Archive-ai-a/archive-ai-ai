@@ -8,6 +8,7 @@ from fastapi.responses import StreamingResponse
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import re
 import logging
 import json
 import uuid
@@ -24,6 +25,9 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
+
+# Secure auth cookies by default; allow opt-out for local HTTP development.
+COOKIE_SECURE = os.environ.get('COOKIE_SECURE', 'true').lower() not in ('0', 'false', 'no')
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
@@ -239,7 +243,7 @@ async def login(payload: LoginIn, request: Request, response: Response):
     token = create_access_token(user["id"], user["email"], user["role"])
     response.set_cookie(
         key="access_token", value=token,
-        httponly=True, secure=False, samesite="lax",
+        httponly=True, secure=COOKIE_SECURE, samesite="lax",
         max_age=60 * 60 * 24 * 7, path="/",
     )
     await db.users.update_one({"id": user["id"]}, {"$set": {"last_login_at": now_iso()}})
@@ -280,7 +284,7 @@ async def register(payload: RegisterIn, response: Response):
     }
     await db.users.insert_one(doc)
     token = create_access_token(doc["id"], doc["email"], doc["role"])
-    response.set_cookie("access_token", token, httponly=True, secure=False, samesite="lax",
+    response.set_cookie("access_token", token, httponly=True, secure=COOKIE_SECURE, samesite="lax",
                         max_age=60 * 60 * 24 * 7, path="/")
     doc.pop("password_hash")
     doc.pop("_id", None)
@@ -388,7 +392,7 @@ async def create_admin(payload: AdminCreateIn, _: dict = Depends(require_super_a
 
 
 @api_router.post("/admin/admins/reset-password")
-async def reset_admin_password(payload: PasswordResetIn, _: dict = Depends(require_admin)):
+async def reset_admin_password(payload: PasswordResetIn, _: dict = Depends(require_super_admin)):
     email = payload.email.lower().strip()
     user = await db.users.find_one({"email": email})
     if not user:
@@ -434,10 +438,13 @@ async def list_tools(
     if new_launch is not None:
         query["new_launch"] = new_launch
     if q:
+        # Escape user input so it's treated as a literal substring, not a regex
+        # pattern (prevents ReDoS / NoSQL regex injection).
+        q_re = re.escape(q)
         query.setdefault("$or", []).extend([
-            {"name": {"$regex": q, "$options": "i"}},
-            {"tagline": {"$regex": q, "$options": "i"}},
-            {"description": {"$regex": q, "$options": "i"}},
+            {"name": {"$regex": q_re, "$options": "i"}},
+            {"tagline": {"$regex": q_re, "$options": "i"}},
+            {"description": {"$regex": q_re, "$options": "i"}},
         ])
     sort_key = {"views": [("view_count", -1)], "name": [("name", 1)]}.get(sort, [("featured", -1), ("trending", -1), ("view_count", -1)])
     docs = await db.tools.find(query, {"_id": 0}).sort(sort_key).limit(limit).to_list(limit)
@@ -713,10 +720,14 @@ async def root():
 
 app.include_router(api_router)
 
+_cors_origins = [o.strip() for o in os.environ.get('CORS_ORIGINS', '').split(',') if o.strip()]
+# Sending credentials with a wildcard origin is unsafe (and rejected by browsers),
+# so only enable credentialed CORS when explicit origins are configured.
+_allow_credentials = bool(_cors_origins) and _cors_origins != ['*']
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_credentials=_allow_credentials,
+    allow_origins=_cors_origins or [],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -771,8 +782,11 @@ async def _seed_content(force: bool = False):
 
 
 async def _seed_super_admin():
-    email = os.environ.get("ADMIN_EMAIL", "admin@example.com").lower().strip()
-    pwd = os.environ.get("ADMIN_PASSWORD", "admin123")
+    email = os.environ.get("ADMIN_EMAIL", "").lower().strip()
+    pwd = os.environ.get("ADMIN_PASSWORD", "")
+    if not email or not pwd:
+        logger.warning("ADMIN_EMAIL / ADMIN_PASSWORD not set — skipping super admin seed")
+        return
     existing = await db.users.find_one({"email": email})
     if existing is None:
         await db.users.insert_one({

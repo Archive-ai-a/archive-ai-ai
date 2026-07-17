@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 
-from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
+from anthropic import AsyncAnthropic
 
 from auth_utils import hash_password, verify_password, create_access_token, decode_token, extract_token
 from crud_utils import find_by_slug, delete_by_slug, check_slug_available, upsert_by_slug, import_by_slug
@@ -24,7 +24,7 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY')
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
@@ -623,27 +623,26 @@ Tone: direct, confident. Short paragraphs, bullet markers "→". Under 250 words
 
 @api_router.post("/chat/stream")
 async def chat_stream(req: ChatRequest, request: Request):
-    if not EMERGENT_LLM_KEY:
+    if not ANTHROPIC_API_KEY:
         raise HTTPException(500, "LLM key not configured")
     await db.chat_messages.insert_one({
         "session_id": req.session_id, "role": "user",
         "content": req.message, "ts": now_iso(),
     })
-    chat = LlmChat(
-        api_key=EMERGENT_LLM_KEY,
-        session_id=req.session_id,
-        system_message=SYSTEM_PROMPT,
-    ).with_model("anthropic", "claude-sonnet-4-5-20250929")
+    client = AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
 
     async def gen():
         full = []
         try:
-            async for ev in chat.stream_message(UserMessage(text=req.message)):
-                if isinstance(ev, TextDelta):
-                    full.append(ev.content)
-                    yield f"data: {json.dumps({'delta': ev.content})}\n\n"
-                elif isinstance(ev, StreamDone):
-                    break
+            async with client.messages.stream(
+                model="claude-sonnet-4-5-20250929",
+                max_tokens=1024,
+                system=SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": req.message}],
+            ) as stream:
+                async for text in stream.text_stream:
+                    full.append(text)
+                    yield f"data: {json.dumps({'delta': text})}\n\n"
             await db.chat_messages.insert_one({
                 "session_id": req.session_id, "role": "assistant",
                 "content": "".join(full), "ts": now_iso(),

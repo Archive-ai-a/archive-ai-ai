@@ -14,7 +14,7 @@ Palak is building an all-in-one AI tools discovery platform (Futurepedia-inspire
 - **Backend**: FastAPI + MongoDB (motor async)
   - Auth: bcrypt + JWT (cookie + Bearer), super-admin seeded from `.env`, RBAC (super_admin / admin)
   - Models: Tool, Category (parent/sub), CareerPack, User, Activity, ChatMessage
-  - AI: Claude Sonnet 4.5 via Emergent Universal Key with SSE streaming
+  - AI: Claude Sonnet 4.5 via Anthropic API with SSE streaming
 - **Frontend**: React 19 + React Router v7 + Tailwind + shadcn/ui + Recharts
   - Neo-brutalist "Archive" design system: Outfit + Work Sans + Space Mono, black/white with red signal & blue archive accents
 - **Auth Flow**: Cookie-based (`httponly access_token`) + fallback `Authorization: Bearer` header (localStorage)
@@ -69,5 +69,6 @@ Palak is building an all-in-one AI tools discovery platform (Futurepedia-inspire
 - Super Admin: `soumyaranjansrb9@gmail.com` / `Srb123@#`
 
 ## Notes
-- All 3rd-party integrations go through Emergent LLM Key (Claude Sonnet 4.5)
+- AI chat powered by Claude Sonnet 4.5 via Anthropic API
+- MongoDB Atlas used for production database
 - Testing: iteration_1 → 100% backend / ~85% frontend; iteration_2 → 100% frontend after fixes

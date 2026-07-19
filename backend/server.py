@@ -109,6 +109,14 @@ class CategoryIn(BaseModel):
     sort: int = 100
 
 
+class MoneyMethod(BaseModel):
+    title: str
+    steps: List[str] = []
+    tools: List[str] = []
+    price_range: str = ""
+    where_to_sell: str = ""
+
+
 class CareerPack(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -116,9 +124,14 @@ class CareerPack(BaseModel):
     slug: str
     description: str
     profession: str
+    domain: str = ""
     tool_slugs: List[str] = []
     workflow_steps: List[dict] = []
     image_url: str
+    make_money_methods: List[MoneyMethod] = []
+    full_guide: str = ""
+    estimated_time: str = ""
+    difficulty: str = ""
 
 
 class CareerPackIn(BaseModel):
@@ -126,9 +139,14 @@ class CareerPackIn(BaseModel):
     slug: str
     description: str
     profession: str
+    domain: str = ""
     tool_slugs: List[str] = []
     workflow_steps: List[dict] = []
     image_url: str = ""
+    make_money_methods: List[MoneyMethod] = []
+    full_guide: str = ""
+    estimated_time: str = ""
+    difficulty: str = ""
 
 
 class User(BaseModel):

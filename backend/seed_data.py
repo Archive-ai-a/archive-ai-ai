@@ -517,89 +517,9 @@ TOOLS = [
       ["Dub a travel vlog for friends in another language"]),
 ]
 
-# ---------- CAREER PACKS ----------
-CAREER_PACKS = [
-    {
-        "name": "Video Editor Pack",
-        "slug": "video-editor",
-        "description": "The full YouTube/short-form video production stack, powered by AI.",
-        "profession": "freelancer",
-        "tool_slugs": ["chatgpt", "elevenlabs", "runway", "descript", "canva-magic-studio", "midjourney"],
-        "workflow_steps": [
-            {"emoji": "💡", "label": "Idea", "tool": "chatgpt"},
-            {"emoji": "📝", "label": "Script", "tool": "chatgpt"},
-            {"emoji": "🎙", "label": "Voice", "tool": "elevenlabs"},
-            {"emoji": "🎬", "label": "Edit", "tool": "descript"},
-            {"emoji": "🖼", "label": "Thumbnail", "tool": "midjourney"},
-            {"emoji": "🚀", "label": "Publish", "tool": "canva-magic-studio"},
-        ],
-        "image_url": "https://images.pexels.com/photos/26611985/pexels-photo-26611985.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-    },
-    {
-        "name": "Solo Dev Pack",
-        "slug": "solo-dev",
-        "description": "Ship a full-stack app in a weekend, alone.",
-        "profession": "developer",
-        "tool_slugs": ["cursor", "lovable", "v0", "claude", "chatgpt", "github-copilot"],
-        "workflow_steps": [
-            {"emoji": "🧠", "label": "Design", "tool": "claude"},
-            {"emoji": "🎨", "label": "UI", "tool": "v0"},
-            {"emoji": "🏗", "label": "Scaffold", "tool": "lovable"},
-            {"emoji": "⌨️", "label": "Code", "tool": "cursor"},
-            {"emoji": "🧪", "label": "Test", "tool": "github-copilot"},
-            {"emoji": "🚀", "label": "Ship", "tool": "chatgpt"},
-        ],
-        "image_url": "https://images.pexels.com/photos/89724/pexels-photo-89724.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-    },
-    {
-        "name": "Founder Pack",
-        "slug": "founder",
-        "description": "Zero to launch — research, deck, MVP, launch.",
-        "profession": "founder",
-        "tool_slugs": ["perplexity", "gamma", "lovable", "hubspot-ai", "canva-magic-studio", "chatgpt"],
-        "workflow_steps": [
-            {"emoji": "🔍", "label": "Research", "tool": "perplexity"},
-            {"emoji": "📊", "label": "Deck", "tool": "gamma"},
-            {"emoji": "🏗", "label": "MVP", "tool": "lovable"},
-            {"emoji": "📣", "label": "Launch", "tool": "canva-magic-studio"},
-            {"emoji": "💼", "label": "CRM", "tool": "hubspot-ai"},
-            {"emoji": "✍️", "label": "Content", "tool": "chatgpt"},
-        ],
-        "image_url": "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-    },
-    {
-        "name": "Marketer Pack",
-        "slug": "marketer",
-        "description": "Run a 10-person content team as one.",
-        "profession": "marketer",
-        "tool_slugs": ["chatgpt", "midjourney", "ideogram", "heygen", "canva-magic-studio", "perplexity"],
-        "workflow_steps": [
-            {"emoji": "🔎", "label": "Research", "tool": "perplexity"},
-            {"emoji": "✍️", "label": "Copy", "tool": "chatgpt"},
-            {"emoji": "🎨", "label": "Visuals", "tool": "midjourney"},
-            {"emoji": "🔤", "label": "Typography", "tool": "ideogram"},
-            {"emoji": "🎬", "label": "Video", "tool": "heygen"},
-            {"emoji": "📤", "label": "Publish", "tool": "canva-magic-studio"},
-        ],
-        "image_url": "https://images.pexels.com/photos/6476192/pexels-photo-6476192.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
-    },
-    {
-        "name": "Student Pack",
-        "slug": "student",
-        "description": "Ace classes without cutting corners.",
-        "profession": "student",
-        "tool_slugs": ["chatgpt", "perplexity", "notion-ai", "otter", "gamma", "deepseek"],
-        "workflow_steps": [
-            {"emoji": "🔍", "label": "Research", "tool": "perplexity"},
-            {"emoji": "🎙", "label": "Lecture Notes", "tool": "otter"},
-            {"emoji": "📝", "label": "Summarize", "tool": "chatgpt"},
-            {"emoji": "📚", "label": "Notes", "tool": "notion-ai"},
-            {"emoji": "🧠", "label": "Practice", "tool": "deepseek"},
-            {"emoji": "📊", "label": "Present", "tool": "gamma"},
-        ],
-        "image_url": "https://images.unsplash.com/photo-1741699428220-65f37f3fbbcb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwxfHxzdHVkZW50JTIwc3R1ZHlpbmclMjBsaWJyYXJ5fGVufDB8fHx8MTc4MjI4NTg2N3ww&ixlib=rb-4.1.0&q=85"
-    },
-]
+# ---------- CAREER PACKS (imported from seed_packs.py — 50 packs) ----------
+from seed_packs import CAREER_PACKS_50 as CAREER_PACKS
+
 
 # ---------- FAQ ----------
 FAQ = [

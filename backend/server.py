@@ -294,6 +294,7 @@ async def register(payload: RegisterIn, response: Response):
         "role": "user",
         "password_hash": hash_password(payload.password),
         "bookmarks": [],
+        "pack_progress": {},
         "created_at": now_iso(),
         "last_login_at": now_iso(),
     }
@@ -329,6 +330,27 @@ async def add_bookmark(slug: str, user: dict = Depends(require_user)):
 async def remove_bookmark(slug: str, user: dict = Depends(require_user)):
     await db.users.update_one({"id": user["id"]}, {"$pull": {"bookmarks": slug}})
     return {"ok": True}
+
+
+# ---------- Pack Progress ----------
+class PackProgressUpdate(BaseModel):
+    status: str  # "not-started" | "in-progress" | "completed"
+
+
+@api_router.get("/pack-progress")
+async def get_pack_progress(user: dict = Depends(require_user)):
+    return user.get("pack_progress", {})
+
+
+@api_router.post("/pack-progress/{slug}")
+async def update_pack_progress(slug: str, payload: PackProgressUpdate, user: dict = Depends(require_user)):
+    pack = await db.career_packs.find_one({"slug": slug})
+    if not pack:
+        raise HTTPException(404, "Pack not found")
+    key = f"pack_progress.{slug}"
+    await db.users.update_one({"id": user["id"]}, {"$set": {key: payload.status}})
+    await db.activity.insert_one({"type": "pack_progress", "slug": slug, "status": payload.status, "ts": now_iso()})
+    return {"ok": True, "slug": slug, "status": payload.status}
 
 
 # ---------- Bulk import ----------

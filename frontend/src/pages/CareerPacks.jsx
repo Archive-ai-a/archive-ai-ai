@@ -1,14 +1,22 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Search, ArrowUpRight, Filter, Clock, Users, X } from "lucide-react";
+import { Search, ArrowUpRight, Filter, Clock, Users, X, CheckCircle2, PlayCircle, Circle } from "lucide-react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 export default function CareerPacks() {
+  const { user } = useAuth();
   const [packs, setPacks] = React.useState([]);
+  const [progress, setProgress] = React.useState({});
   const [search, setSearch] = React.useState("");
   const [domain, setDomain] = React.useState("");
 
   React.useEffect(() => { api.get("/career-packs").then(r => setPacks(r.data)); }, []);
+  React.useEffect(() => {
+    if (user && user.role === "user") {
+      api.get("/pack-progress").then(r => setProgress(r.data || {})).catch(() => {});
+    }
+  }, [user]);
 
   const domains = React.useMemo(() => {
     const d = new Map();
@@ -120,7 +128,16 @@ export default function CareerPacks() {
                     </span>
                   )}
                 </div>
-                <div className="font-display font-black text-3xl mt-2 leading-tight">{p.name}</div>
+                <div className="font-display font-black text-3xl mt-2 leading-tight">
+                  {p.name}
+                  {progress[p.slug] && (
+                    <span className={`inline-flex items-center gap-1 ml-2 text-sm align-middle ${
+                      progress[p.slug] === 'completed' ? 'text-green-700' : progress[p.slug] === 'in-progress' ? 'text-[var(--signal)]' : 'text-[var(--text-muted)]'
+                    }`}>
+                      {progress[p.slug] === 'completed' ? <CheckCircle2 size={16}/> : progress[p.slug] === 'in-progress' ? <PlayCircle size={16}/> : <Circle size={16}/>}
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-[var(--text-muted)] mt-3 line-clamp-2">{p.description}</p>
                 {/* Workflow */}
                 <div className="mt-5 flex flex-wrap items-center gap-2">

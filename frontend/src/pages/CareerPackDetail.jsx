@@ -1,13 +1,17 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, DollarSign, Clock, Target, ExternalLink, TrendingUp, BookOpen, ChevronRight } from "lucide-react";
+import { ArrowLeft, DollarSign, Clock, Target, ExternalLink, TrendingUp, BookOpen, ChevronRight, CheckCircle2, PlayCircle, Circle, Save } from "lucide-react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
 import ToolCard from "@/components/ToolCard";
 
 export default function CareerPackDetail() {
   const { slug } = useParams();
+  const { user } = useAuth();
   const [pack, setPack] = React.useState(null);
   const [tools, setTools] = React.useState([]);
+  const [progress, setProgress] = React.useState("");
 
   React.useEffect(() => {
     api.get(`/career-packs/${slug}`).then(r => {
@@ -18,6 +22,27 @@ export default function CareerPackDetail() {
       });
     });
   }, [slug]);
+
+  React.useEffect(() => {
+    if (user && user.role === "user") {
+      api.get("/pack-progress").then(r => {
+        const p = r.data || {};
+        setProgress(p[slug] || "");
+      }).catch(() => {});
+    }
+  }, [user, slug]);
+
+  const updateProgress = async (status) => {
+    if (!user || user.role !== "user") {
+      toast.info("Sign in to track progress");
+      return;
+    }
+    try {
+      await api.post(`/pack-progress/${slug}`, { status });
+      setProgress(status);
+      toast.success(status === "completed" ? "Marked as completed!" : status === "in-progress" ? "Started tracking" : "Progress reset");
+    } catch { toast.error("Failed to update"); }
+  };
 
   if (!pack) return <div className="max-w-7xl mx-auto px-6 py-12 font-mono">Loading...</div>;
 
@@ -48,6 +73,31 @@ export default function CareerPackDetail() {
               <span>{pack.estimated_time}</span>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Progress Tracker */}
+      <section className="max-w-7xl mx-auto px-6 md:px-12 py-6 border-b-2 border-black">
+        <div className="flex items-center gap-4">
+          <div className="overline">Your Progress</div>
+          <div className="flex gap-2">
+            {[
+              { status: "in-progress", label: "Start", icon: <PlayCircle size={14}/>, activeClass: "bg-[var(--signal)] text-white border-[var(--signal)]" },
+              { status: "completed", label: "Complete", icon: <CheckCircle2 size={14}/>, activeClass: "bg-green-700 text-white border-green-700" },
+              { status: "not-started", label: "Reset", icon: <Circle size={14}/>, activeClass: "" },
+            ].map(({ status, label, icon, activeClass }) => (
+              <button
+                key={status}
+                onClick={() => updateProgress(status)}
+                data-testid={`progress-${status}`}
+                className={`inline-flex items-center gap-1.5 border-2 border-black px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
+                  progress === status ? activeClass : 'hover:bg-black hover:text-white'
+                }`}
+              >
+                {icon} {label}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
